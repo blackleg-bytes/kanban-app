@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Mail, Lock, User } from "lucide-react";
+import Logo from "@/components/Logo";
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
@@ -32,20 +33,16 @@ export default function SignupPage() {
 
   return (
     <div className="space-y-6">
-      <Link
-        href="/"
-        className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition"
-      >
-        <ArrowLeft size={18} />
-        <span className="text-sm">Back to home</span>
-      </Link>
-
       <Card className="p-8">
+        <div className="flex justify-center">
+          <Link href="/">
+            <Logo className="text-4xl" />
+          </Link>
+        </div>
         <div className="space-y-2 mb-8">
-          <h1 className="text-2xl font-bold">Create your account</h1>
-          <p className="text-muted-foreground text-sm">
-            Get started with Kanban today
-          </p>
+          <h1 className="text-2xl font-bold text-center">
+            Create your account
+          </h1>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

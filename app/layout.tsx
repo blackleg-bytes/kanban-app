@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
+import { ClerkProvider } from "@clerk/nextjs";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,8 +15,15 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const anandaBlack = localFont({
+  src: "../public/fonts/AnandaBlack.ttf",
+  variable: "--font-ananda-black",
+  weight: "400",
+  style: "normal",
+});
+
 export const metadata: Metadata = {
-  title: "Kanban Board - Task Management Made Simple",
+  title: "Sprintly - Task Management Made Simple",
   description:
     "A modern kanban board application for managing tasks and collaborating with your team in real-time.",
   generator: "v0.app",
@@ -43,13 +52,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-        <Analytics />
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} ${anandaBlack.variable} antialiased`}
+        >
+          {children}
+          <Analytics />
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

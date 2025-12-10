@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Zap, Users, BarChart3, Lock } from "lucide-react";
+import Logo from "@/components/Logo";
 
 export default function LandingPage() {
   return (
@@ -8,12 +9,7 @@ export default function LandingPage() {
       {/* Navigation */}
       <nav className="fixed top-0 w-full border-b border-border bg-background/80 backdrop-blur-sm z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">KB</span>
-            </div>
-            <span className="font-bold text-xl">Kanban</span>
-          </div>
+          <Logo className="text-2xl"/>
           <div className="hidden md:flex items-center gap-8">
             <Link
               href="#features"
