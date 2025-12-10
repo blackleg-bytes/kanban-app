@@ -1,16 +1,18 @@
 "use client";
 
 import type React from "react";
-
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Mail, Lock, User } from "lucide-react";
+import { Mail, Lock, User } from "lucide-react";
 import Logo from "@/components/Logo";
+import { useSignUp } from "@clerk/nextjs";
+import type { ClerkAPIResponseError } from "@clerk/types";
 
 export default function SignupPage() {
+  const { signUp, setActive } = useSignUp();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -18,6 +20,7 @@ export default function SignupPage() {
     confirmPassword: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<string[]>([]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -27,8 +30,66 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // TODO: Add signup logic
-    setTimeout(() => setIsLoading(false), 1000);
+    setErrors([]);
+
+    if (formData.password !== formData.confirmPassword) {
+      setErrors(["Passwords do not match"]);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      if (!signUp || !setActive) {
+        setErrors(["SignUp not ready. Please try again."]);
+        return;
+      }
+
+      const result = await signUp.create({
+        emailAddress: formData.email,
+        password: formData.password,
+      });
+
+      await signUp.update({
+        firstName: formData.name,
+      });
+
+      console.log({result});
+
+      if (result.status === "complete") {
+        await setActive({ session: result.createdSessionId });
+        window.location.href = "/dashboard";
+      }
+    } catch (err) {
+      const clerkErr = err as ClerkAPIResponseError;
+      if (clerkErr.errors) {
+        setErrors(clerkErr.errors.map((e) => e.message));
+      } else {
+        setErrors(["Signup failed. Please try again."]);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOAuth = async (strategy: "oauth_google" | "oauth_github") => {
+    try {
+      if (!signUp) {
+        setErrors(["OAuth not ready. Please try again."]);
+        return;
+      }
+      await signUp.authenticateWithRedirect({
+        strategy,
+        redirectUrl: "/auth/callback",
+        redirectUrlComplete: "/dashboard",
+      });
+    } catch (err) {
+      const clerkErr = err as ClerkAPIResponseError;
+      if (clerkErr.errors) {
+        setErrors(clerkErr.errors.map((e) => e.message));
+      } else {
+        setErrors(["OAuth failed. Please try again."]);
+      }
+    }
   };
 
   return (
@@ -126,6 +187,14 @@ export default function SignupPage() {
             </div>
           </div>
 
+          {errors.length > 0 && (
+            <ul className="text-sm text-red-500 space-y-1">
+              {errors.map((msg, i) => (
+                <li key={i}>{msg}</li>
+              ))}
+            </ul>
+          )}
+
           <Button
             type="submit"
             className="w-full bg-primary hover:bg-primary/90"
@@ -135,6 +204,7 @@ export default function SignupPage() {
           </Button>
         </form>
 
+        {/* Divider */}
         <div className="mt-6 space-y-4">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
@@ -147,11 +217,20 @@ export default function SignupPage() {
             </div>
           </div>
 
+          {/* OAuth Buttons */}
           <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline" className="w-full bg-transparent">
+            <Button
+              variant="outline"
+              className="w-full bg-transparent"
+              onClick={() => handleOAuth("oauth_google")}
+            >
               Google
             </Button>
-            <Button variant="outline" className="w-full bg-transparent">
+            <Button
+              variant="outline"
+              className="w-full bg-transparent"
+              onClick={() => handleOAuth("oauth_github")}
+            >
               GitHub
             </Button>
           </div>
