@@ -6,13 +6,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Mail, Lock, User } from "lucide-react";
+import { Mail, Lock, User, Eye, EyeOff } from "lucide-react"; // added Eye icons
+import { Github, Chrome } from "lucide-react"; // icons for OAuth
 import Logo from "@/components/Logo";
-import { useSignUp } from "@clerk/nextjs";
-import type { ClerkAPIResponseError } from "@clerk/types";
 
 export default function SignupPage() {
-  const { signUp, setActive } = useSignUp();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -21,12 +19,15 @@ export default function SignupPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Placeholder submit function
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -39,57 +40,21 @@ export default function SignupPage() {
     }
 
     try {
-      if (!signUp || !setActive) {
-        setErrors(["SignUp not ready. Please try again."]);
-        return;
-      }
-
-      const result = await signUp.create({
-        emailAddress: formData.email,
-        password: formData.password,
-      });
-
-      await signUp.update({
-        firstName: formData.name,
-      });
-
-      console.log({result});
-
-      if (result.status === "complete") {
-        await setActive({ session: result.createdSessionId });
+      console.log("Signup attempt:", formData);
+      setTimeout(() => {
         window.location.href = "/dashboard";
-      }
+      }, 1000);
     } catch (err) {
-      const clerkErr = err as ClerkAPIResponseError;
-      if (clerkErr.errors) {
-        setErrors(clerkErr.errors.map((e) => e.message));
-      } else {
-        setErrors(["Signup failed. Please try again."]);
-      }
+      setErrors(["Signup failed. Please try again."]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleOAuth = async (strategy: "oauth_google" | "oauth_github") => {
-    try {
-      if (!signUp) {
-        setErrors(["OAuth not ready. Please try again."]);
-        return;
-      }
-      await signUp.authenticateWithRedirect({
-        strategy,
-        redirectUrl: "/auth/callback",
-        redirectUrlComplete: "/dashboard",
-      });
-    } catch (err) {
-      const clerkErr = err as ClerkAPIResponseError;
-      if (clerkErr.errors) {
-        setErrors(clerkErr.errors.map((e) => e.message));
-      } else {
-        setErrors(["OAuth failed. Please try again."]);
-      }
-    }
+  // Placeholder OAuth function
+  const handleOAuth = (provider: "google" | "github") => {
+    console.log(`OAuth with ${provider} clicked`);
+    window.location.href = "/dashboard";
   };
 
   return (
@@ -157,13 +122,20 @@ export default function SignupPage() {
               />
               <Input
                 name="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 value={formData.password}
                 onChange={handleChange}
-                className="pl-10"
+                className="pl-10 pr-10"
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
           </div>
 
@@ -177,13 +149,20 @@ export default function SignupPage() {
               />
               <Input
                 name="confirmPassword"
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 placeholder="••••••••"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="pl-10"
+                className="pl-10 pr-10"
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              >
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
           </div>
 
@@ -221,17 +200,17 @@ export default function SignupPage() {
           <div className="grid grid-cols-2 gap-4">
             <Button
               variant="outline"
-              className="w-full bg-transparent"
-              onClick={() => handleOAuth("oauth_google")}
+              className="w-full bg-transparent flex items-center gap-2"
+              onClick={() => handleOAuth("google")}
             >
-              Google
+              <Chrome size={18} /> Google
             </Button>
             <Button
               variant="outline"
-              className="w-full bg-transparent"
-              onClick={() => handleOAuth("oauth_github")}
+              className="w-full bg-transparent flex items-center gap-2"
+              onClick={() => handleOAuth("github")}
             >
-              GitHub
+              <Github size={18} /> GitHub
             </Button>
           </div>
         </div>

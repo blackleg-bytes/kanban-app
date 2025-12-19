@@ -1,13 +1,12 @@
 "use client";
 
 import type React from "react";
-
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Mail, Lock } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Chrome, Github } from "lucide-react"; // added icons
 import Logo from "@/components/Logo";
 
 export default function LoginPage() {
@@ -16,6 +15,8 @@ export default function LoginPage() {
     password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<string[]>([]);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -25,8 +26,27 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // TODO: Add login logic
-    setTimeout(() => setIsLoading(false), 1000);
+    setErrors([]);
+
+    try {
+      // Placeholder login logic
+      console.log("Login attempt:", formData);
+
+      // Simulate success
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 1000);
+    } catch (err) {
+      setErrors(["Login failed. Please try again."]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOAuth = (provider: "google" | "github") => {
+    console.log(`OAuth with ${provider} clicked`);
+    // Simulate redirect
+    window.location.href = "/dashboard";
   };
 
   return (
@@ -72,16 +92,24 @@ export default function LoginPage() {
               />
               <Input
                 name="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 value={formData.password}
                 onChange={handleChange}
-                className="pl-10"
+                className="pl-10 pr-10"
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
           </div>
 
+          {/* Remember + Forgot */}
           <div className="flex items-center justify-between text-sm">
             <label className="flex items-center gap-2">
               <input type="checkbox" className="rounded border-border" />
@@ -95,6 +123,14 @@ export default function LoginPage() {
             </Link>
           </div>
 
+          {errors.length > 0 && (
+            <ul className="text-sm text-red-500 space-y-1">
+              {errors.map((msg, i) => (
+                <li key={i}>{msg}</li>
+              ))}
+            </ul>
+          )}
+
           <Button
             type="submit"
             className="w-full bg-primary hover:bg-primary/90"
@@ -104,6 +140,7 @@ export default function LoginPage() {
           </Button>
         </form>
 
+        {/* Divider */}
         <div className="mt-6 space-y-4">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
@@ -116,12 +153,21 @@ export default function LoginPage() {
             </div>
           </div>
 
+          {/* OAuth Buttons */}
           <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline" className="w-full bg-transparent">
-              Google
+            <Button
+              variant="outline"
+              className="w-full bg-transparent flex items-center gap-2"
+              onClick={() => handleOAuth("google")}
+            >
+              <Chrome size={18} /> Google
             </Button>
-            <Button variant="outline" className="w-full bg-transparent">
-              GitHub
+            <Button
+              variant="outline"
+              className="w-full bg-transparent flex items-center gap-2"
+              onClick={() => handleOAuth("github")}
+            >
+              <Github size={18} /> GitHub
             </Button>
           </div>
         </div>
